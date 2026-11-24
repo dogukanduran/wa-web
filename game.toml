@@ -1,0 +1,45 @@
+# game.toml — Worms Armageddon (32-bit x86 Win32) configuration for recomp-kit
+
+[game]
+id = "wa"
+name = "Worms Armageddon"
+app_name = "ArmageddonRecomp"
+bundle_id = "dev.armageddon.recomp"
+executable = "WA.exe"
+sha256 = "10d8172b5761bb5a1cb4ec219fdaca5015c0b86b6638c8dbcc8f5d0618c0a8b9"
+image_base = 0x00400000
+entry_point = 0x005d8b6c
+guest_root = 'C:\WormsArmageddon'
+developer_exe = "original/WA.exe"
+windows_version = "4.10"
+
+[translate]
+function_alignment = 1
+listings = "analysis/WA.exe"
+globals = "globals.toml"
+animation_counter = 0
+volatile_reads = []
+entry_points = [0x005d8b6c, 0x005ddccf, 0x006060f4, 0x005c4c43]
+
+[hooks]
+frame_clock_begin = 0
+frame_clock_wait = 0
+frame_clock_wait_clamp = 0
+frame_clock_clamp_deadline = 0
+frame_clock_wait_deadline = 0
+cursor_surface_ptrs = [0, 0]
+mouse_vtable = 0
+mouse_device_ptr = 0
+mouse_device_right = 0
+camera = 0
+
+[controls]
+default_layout = "keys"
+pad = "mapped"
+
+[bundle]
+exclude = [
+  "WA_Manual.pdf",
+  "*.rtf",
+  "installscript.vdf",
+]

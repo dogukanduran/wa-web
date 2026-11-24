@@ -1,0 +1,33 @@
+# Copyrighted Worms Armageddon installation (NEVER commit)
+/game/
+game/
+/original
+/original/
+original/
+
+# Disassembly listings, lifted C, and build outputs (derived from WA.exe)
+/analysis/
+analysis/
+/build/
+build/
+
+# Reverse engineering local scratch
+.rea/
+*.evidence.json
+*.ghidra/
+*.gpr
+*.rep/
+
+# Python / Node / OS / Editor
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.DS_Store
+**/.DS_Store
+.vscode/
+.idea/
+
+# Local frame dumps (rendered game output, copyrighted)
+/410/
+*.ppm
