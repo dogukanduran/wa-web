@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Generic recomp-kit issues
+    url: https://github.com/veritr1x/recomp-kit/issues
+    about: Problems with the kit itself that would affect any game, not just Worms Armageddon.

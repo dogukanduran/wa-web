@@ -19,7 +19,7 @@ Instructions for AI coding agents working on **Armageddon Recomp** (`/Users/0xbe
 - Target binary: 32-bit x86 PE `WA.exe` (GOG v3.8.1, `SHA-256: 10d8172b5761bb5a1cb4ec219fdaca5015c0b86b6638c8dbcc8f5d0618c0a8b9`).
   - `image_base = 0x00400000`, `entry_point = 0x005d8b6c`, `.text = 0x00401000..0x006194d3`.
   - Extra translator `entry_points` in `game.toml`: `[0x005d8b6c, 0x005ddccf, 0x006060f4, 0x005c4c43]` (`0x005c4c43` = `_AfxCbtFilterHook`).
-- GOG v3.8.1 does **not** use LEADTOOLS; it loads BMPs directly via `CreateFileA`/`ReadFile` (front-end sprites) and `LoadImageA(..., LR_CREATEDIBSECTION | LR_LOADFROMFILE)` (fonts, cursor, icons).
+- GOG v3.8.1 statically imports LEADTOOLS (`LTKRN10N.dll`, `LTFIL10N.DLL`), so the kit must keep resolving those imports, but it doesn't call them for the front end; it loads BMPs directly via `CreateFileA`/`ReadFile` (front-end sprites) and `LoadImageA(..., LR_CREATEDIBSECTION | LR_LOADFROMFILE)` (fonts, cursor, icons).
 - Primary delivery target is **WebAssembly + WebGPU** (`build/cmake/web`, target `ArmageddonRecomp.js`), served via `kit/tools/web_launcher.py`. Use native `pop_headless` (`build/cmake/macos`) for fast local debugging and frame verification.
 
 ---

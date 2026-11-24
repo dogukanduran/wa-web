@@ -1,0 +1,16 @@
+wa-web is a static recompilation project for Worms Armageddon. It is not
+affiliated with or endorsed by Team17.
+
+LICENSE covers the handwritten files in this repository: configuration
+(game.toml, globals.toml), scripts under tools/, CI and documentation.
+
+Worms Armageddon, its executable code, artwork, audio, levels and other data
+belong to their owners and are never included here. Every player and
+contributor supplies their own legally owned copy (GOG.com v3.8.1). Ghidra
+listings and translated C generated from WA.exe are local build products and
+are never tracked.
+
+kit/ is a git submodule of recomp-kit (https://github.com/veritr1x/recomp-kit,
+used through the fork https://github.com/dogukanduran/recomp-kit). It carries
+its own LICENSE and NOTICE, which cover its code and bundled third-party
+components.

@@ -26,9 +26,19 @@ Static x86 binary recompilation of **Worms Armageddon (`WA.exe`)** to **WebAssem
 ## Quick Start (Build & Run Web Version)
 
 ### Prerequisites
-- **Ghidra** (`>= 12.2`) + **OpenJDK 21** (headless disassembly export)
+- **Ghidra 12.1.3** + **OpenJDK 21** (headless disassembly export)
 - **CMake**, **Ninja**, **Clang**, **Python 3** (`.venv`)
 - **Emscripten** (`emcc`) for WebAssembly builds
+
+### First-Time Setup
+```bash
+git clone --recurse-submodules https://github.com/dogukanduran/wa-web && cd wa-web
+python3 -m venv .venv && .venv/bin/pip install -r kit/requirements-dev.txt
+.venv/bin/python kit/tools/setup.py --game-dir "$PWD" --install "/path/to/Worms Armageddon" --link-only
+GHIDRA_HOME=/path/to/ghidra_12.1.3_PUBLIC tools/export_listings.sh
+.venv/bin/python tools/build.py --target headless --regenerate
+```
+Full details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Build WebAssembly & Serve
 ```bash
@@ -50,3 +60,13 @@ cmake --build build/cmake/macos --target pop_headless --parallel 8
 rm -f /tmp/wa_clean_reg.json
 RECOMP_REGISTRY=/tmp/wa_clean_reg.json ./build/recomp/pop_headless
 ```
+
+---
+
+## Contributing
+
+Contributions are welcome: missing Win32/DirectX shims, rendering and audio fixes, getting into matches, browser polish. Read [CONTRIBUTING.md](CONTRIBUTING.md) first, especially the rules on game files, and see the open TODOs in [STATUS.md](STATUS.md#4-next-session-todos-known-issues-to-investigate--fix).
+
+## License
+
+The handwritten files in this repository are [MIT-licensed](LICENSE). `kit/` carries its own license. Worms Armageddon and all of its content belong to their owners; see [NOTICE](NOTICE).

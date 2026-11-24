@@ -1,0 +1,40 @@
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  publication:
+    runs-on: ubuntu-latest
+    steps:
+      # Fetching the submodule also proves the kit commit it points at was pushed.
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: No game content or derived output is tracked
+        run: python tools/check_publication.py
+
+      - name: Config files parse
+        run: |
+          python - <<'EOF'
+          import tomllib
+          for name in ("game.toml", "globals.toml"):
+              with open(name, "rb") as f:
+                  tomllib.load(f)
+              print("ok", name)
+          EOF
+
+      - name: Scripts compile
+        run: |
+          python -m py_compile tools/*.py
+          bash -n tools/export_listings.sh

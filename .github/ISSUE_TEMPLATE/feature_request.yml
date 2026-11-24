@@ -1,0 +1,21 @@
+name: Feature or missing support
+description: A game feature, Win32/DirectX API, or web player capability that isn't supported yet
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What's missing
+      description: The game feature, API (e.g. `DrawTextA`), or player behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Where WA.exe needs it
+      description: Addresses, call sites, log lines (e.g. "unimplemented import"). No pasted disassembly.
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed approach
+      description: Optional. Does it belong in kit/ (generic) or in game.toml/hooks (WA-specific)?

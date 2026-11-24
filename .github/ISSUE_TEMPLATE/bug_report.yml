@@ -1,0 +1,55 @@
+name: Bug report
+description: Something crashes, renders wrong, or behaves differently from the original game
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please **don't attach game files** (WA.exe, DLLs, BMP/WAV/IMG data, listings or translated code).
+        Logs, addresses and short descriptions are welcome.
+  - type: dropdown
+    id: target
+    attributes:
+      label: Build target
+      options:
+        - Web (WebAssembly + WebGPU)
+        - Native headless (pop_headless)
+        - Native app
+    validations:
+      required: true
+  - type: input
+    id: commits
+    attributes:
+      label: wa-web commit and kit commit
+      description: "`git rev-parse --short HEAD` and `git -C kit rev-parse --short HEAD`"
+      placeholder: "wa-web 398bac4, kit c96ff53"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS and browser
+      placeholder: "macOS 26.4, Chrome 142"
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Menu path or RECOMP_CLICK_AT sequence, starting from a clean registry.
+      placeholder: |
+        1. Start with a clean registry
+        2. Main Menu -> Single Player -> ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+      description: What the original game does and what the recomp does.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant output (RECOMP_LOG=2 helps), the browser console, guest addresses involved.
+      render: text
