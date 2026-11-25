@@ -37,3 +37,12 @@ Instructions for AI coding agents working on **Armageddon Recomp** (`/Users/0xbe
 
 - Use the `rea` MCP server (with Ghidra configured via `GHIDRA_INSTALL_DIR`) or `build/recomp/gen/chunk_*.c` to inspect `WA.exe` entry points, MFC message handlers, DirectDraw/DirectInput setup, and indirect call targets.
 - Document verified addresses and symbol names in `globals.toml`, `game.toml`, and `STATUS.md`.
+
+---
+
+## 5. Context & Token Hygiene
+
+- **Redirect noisy logs:** Redirect `pop_headless` (especially with `RECOMP_LOG=2`) and `cmake` build output to `/tmp/*.log` (`> /tmp/wa.log 2>&1`), then inspect only `tail` or `rg` slices.
+- **Targeted reads only:** Never read whole `build/recomp/gen/chunk_*.c` files or large docs like `kit/CHANGELOG.md`; run `rg -n` for the address/symbol first and read only the relevant function's line range.
+- **Targeted `rea` calls:** Prefer `procedure_pseudo_code`, `xrefs`, and `search_procedures` over `batch_decompile` or `decompile_all`.
+- **Delegate broad searches:** Use the `research` subagent for multi-file RE traces or broad `kit/` surveys to keep raw search output out of the main context.
