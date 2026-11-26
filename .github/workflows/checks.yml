@@ -21,6 +21,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Asset stream correctness and copy budget
+        run: node tests/stream-buffer.test.cjs
+
       - name: No game content or derived output is tracked
         run: python tools/check_publication.py
 

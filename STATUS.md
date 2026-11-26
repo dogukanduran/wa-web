@@ -1,6 +1,34 @@
 # Armageddon Recomp — Session Handoff & Status
 
-Last updated: 2026-11-24
+Last updated: 2026-11-26
+
+## 2026-11-26: Asset-install buffer optimization
+
+The WA-only asset worker now reads contiguous records directly from the download
+chunk and assembles fragmented records in one allocation. Previously, each new
+chunk reallocated and recopied the entire partial asset.
+
+For a synthetic 8 MiB file delivered in 512 chunks of 16 KiB, instrumenting the
+same worker before and after the change measured 2,151,677,952 bytes allocated
+and copied before, versus 8,388,608 after (256.5 times less copying). These are
+parser allocation/copy counts, not whole-browser memory or gameplay FPS.
+
+Six Node tests cover contiguous and fragmented reads, retained views, empty
+chunks/files, progress accounting, truncated downloads, reader errors and the
+linear copy budget. Run `node tests/stream-buffer.test.cjs`; CI runs it too.
+Headless Chrome 157 on Fedora successfully installed the fragmented 8 MiB
+fixture, an empty file and a trailing text record into OPFS with exact bytes.
+Reload reused the installation without requesting the pack again; no page
+errors occurred. The real 146.7 MB pack also installed all 4,395 files; the
+installed executable matched the configured SHA-256, and reload made no second
+pack request. These checks validate installation, not game playback.
+
+A fresh WebAssembly build from the pinned kit was attempted. The sandboxed
+translation process ended with SIGTERM before producing a report; a retry
+outside the sandbox is pending. No successful fresh Wasm build or gameplay
+result is claimed for this change yet.
+
+The inherited milestones and pending gameplay checks below are historical.
 
 ---
 

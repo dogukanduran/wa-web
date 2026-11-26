@@ -134,26 +134,38 @@ class StreamBuffer {
     this.done = false;
     this.received = 0;
   }
-  async ensure(n) {
-    while (this.buf.length - this.pos < n) {
+  async nextChunk() {
+    while (this.pos === this.buf.length) {
       if (this.done) throw new Error("Unexpected end of assets.pak");
       const { done, value } = await this.reader.read();
       if (done) { this.done = true; continue; }
       this.received += value.length;
       this.onBytes(this.received);
-      const rem = this.buf.length - this.pos;
-      const next = new Uint8Array(rem + value.length);
-      next.set(this.buf.subarray(this.pos), 0);
-      next.set(value, rem);
-      this.buf = next;
+      this.buf = value;
       this.pos = 0;
     }
   }
   async readExact(n) {
-    await this.ensure(n);
-    const slice = this.buf.subarray(this.pos, this.pos + n);
-    this.pos += n;
-    return slice;
+    if (n === 0) return this.buf.subarray(this.pos, this.pos);
+    await this.nextChunk();
+    if (this.buf.length - this.pos >= n) {
+      const slice = this.buf.subarray(this.pos, this.pos + n);
+      this.pos += n;
+      return slice;
+    }
+
+    // Assemble split records once. Growing a buffer for each network chunk
+    // repeatedly copied the entire partial asset, making large reads quadratic.
+    const result = new Uint8Array(n);
+    let written = 0;
+    while (written < n) {
+      await this.nextChunk();
+      const take = Math.min(n - written, this.buf.length - this.pos);
+      result.set(this.buf.subarray(this.pos, this.pos + take), written);
+      this.pos += take;
+      written += take;
+    }
+    return result;
   }
 }
 
