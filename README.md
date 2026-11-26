@@ -45,13 +45,8 @@ Full details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 # 1. Build WebAssembly target
 cmake --build build/cmake/web --target ArmageddonRecomp.js --parallel 8
 
-# 2. Stage GOG assets for streaming and serve on http://localhost:8080/
-.venv/bin/python kit/tools/web_launcher.py \
-  --game-dir . \
-  --out build/web/site \
-  --web-build wa=build/web/recomp \
-  --stream wa \
-  --serve 8080
+# 2. Stage WA-only Play site and serve on http://localhost:8080/
+.venv/bin/python tools/serve_web.py --serve 8080
 ```
 
 ### Headless Verification (Native macOS)

@@ -1,0 +1,103 @@
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.setup {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+  transition: border-color 0.15s;
+}
+.card.drag { border-color: #58a6ff; }
+.card h1 { margin: 0; font-size: 1.5rem; }
+.lead { margin: 0; color: #8b949e; font-size: 0.95rem; line-height: 1.45; }
+
+.state { font-weight: 600; font-size: 0.95rem; }
+.state.ready { color: #3fb950; }
+.state.warn { color: #d29922; }
+.state.bad { color: #f85149; }
+
+.detail { color: #8b949e; font-size: 0.875rem; line-height: 1.4; }
+.progress { display: grid; gap: 6px; }
+progress { width: 100%; height: 8px; }
+
+.message {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1f2937;
+  font-size: 0.875rem;
+}
+.message.bad { background: #3b1c20; color: #ffa198; }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+button {
+  appearance: none;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #e6edf3;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #30363d; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: #238636; border-color: #2ea043; font-weight: 600; }
+button.primary:hover:not(:disabled) { background: #2ea043; }
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+#status {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  background: rgba(13, 17, 23, 0.9);
+  font-size: 1rem;
+  z-index: 10;
+}
+
+#fs-banner {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(22, 27, 34, 0.9);
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  z-index: 20;
+}
+#fs-banner.compact #fs-text,
+#fs-banner.compact #fs-dismiss { display: none; }
+#fs-banner button { padding: 4px 10px; font-size: 0.8rem; }
+#setup[hidden], #status[hidden], #canvas[hidden], #fs-banner[hidden], [hidden] { display: none !important; }

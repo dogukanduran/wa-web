@@ -42,4 +42,8 @@ exclude = [
   "WA_Manual.pdf",
   "*.rtf",
   "installscript.vdf",
+  "unins000.*",
+  "goggame-*",
+  "gog.ico",
+  "webcache.zip",
 ]

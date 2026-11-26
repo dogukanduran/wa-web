@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; object-src 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worms Armageddon</title>
+<link rel="stylesheet" href="style.css?v=__RECOMP_BUILD__">
+</head>
+<body>
+<main id="setup" class="setup">
+  <section class="card">
+    <h1>Worms Armageddon</h1>
+    <div class="state" id="state">Checking game files…</div>
+    <div class="detail" id="detail"></div>
+    <div class="progress" id="progress" hidden>
+      <progress id="progress-bar" max="1" value="0"></progress>
+      <div class="detail" id="progress-text"></div>
+    </div>
+    <div class="message" id="message" role="status" hidden></div>
+    <div class="buttons">
+      <button class="primary" id="play" disabled>Play</button>
+    </div>
+  </section>
+</main>
+
+<canvas id="canvas" tabindex="-1" hidden></canvas>
+<div id="status" hidden></div>
+<div id="fs-banner" role="region" aria-label="Display resolution tip" hidden>
+  <span id="fs-text">For full native screen resolution in matches, play in Fullscreen.</span>
+  <button id="fs-toggle" type="button">Enter Fullscreen (F11)</button>
+  <button id="fs-dismiss" type="button" aria-label="Dismiss tip" title="Dismiss">✕</button>
+</div>
+<script type="module" src="app.js?v=__RECOMP_BUILD__"></script>
+</body>
+</html>
