@@ -1,6 +1,158 @@
 # Armageddon Recomp — Session Handoff & Status
 
-Last updated: 2026-11-26
+Last updated: 2026-11-27
+
+## 2026-11-27: Offline stutter profiling baseline
+
+The profiling pass is complete; the stutter problem is **not** declared fixed.
+The prior average FPS result counted software presenter completions, not physical
+scanout, and did not characterize startup or frame-time tails. Multiplayer stays
+outside this milestone. Game execution remains client-side Wasm and the existing
+private asset/OPFS architecture is unchanged.
+
+Recent history was checked against upstream: wa-web PR #1 was merged by
+`dogukanduran`. Its asset-install optimization is retained. The separate local
+WA-only player-staging commit is included in this follow-up. Runtime changes
+are in [recomp-kit PR #1](https://github.com/dogukanduran/recomp-kit/pull/1),
+targeting the kit's `wa-web` branch; merge that dependency before this parent PR.
+Unrelated map-editor palette/exit and capture changes remain outside these commits.
+
+### Comparable baseline
+
+All three runs use the same private recorded Quick CPU replay, game data,
+1280x960 game and drawable, AMD integrated Radeon and a 165 Hz X11 desktop.
+The approximately 2–32 second replay segment was sampled for 30 seconds after
+visible gameplay. HUD clocks advanced approximately 30 seconds in each capture.
+These are single qualified runs, not statistical confidence intervals.
+The original Windows executable runs under Wine 11.21 Staging; this is not a
+native-Windows measurement. Native uses Linux/Vulkan; Chrome 158.0.8127.88 uses
+Wasm/WebGPU/Vulkan. CPU is Ryzen 7 5800H, kernel 7.3.5-200.fc44.x86_64.
+
+| Runtime | CPU mean (one core = 100%) | GPU busy mean | Window updates/s | Window interval P50/P95/P99 ms |
+| --- | ---: | ---: | ---: | --- |
+| Original under Wine | 39.2% | 25.0% | 164.9 | 6.06 / 6.23 / 6.37 |
+| Native recompilation | 109.2% | 24.3% | 224.9 | 4.49 / 10.18 / 11.58 |
+| Wasm | 180.4% | 20.3% | 111.6 | 7.36 / 13.82 / 18.24 |
+
+Window updates are XDamage receive events: they can exceed refresh rate and
+include repeated images. They are **not displayed FPS or input latency**.
+CPU samples include the dedicated application's process group (the browser
+PID, not its Node controller); the isolated Wine server is excluded. GPU busy
+is device-wide and includes desktop work. Summed process RSS can count shared
+mappings more than once; peaks were about 278 / 181 / 2,448 MB respectively.
+
+| Presenter metric | Native | Wasm |
+| --- | ---: | ---: |
+| New completion throughput | 83.35/s | 63.32/s |
+| New-frame interval P50/P95/P99 | 12.81 / 15.66 / 30.72 ms | 16.27 / 20.68 / 36.28 ms |
+| Maximum new-frame interval | 37.86 ms | 43.30 ms |
+| Sealed-to-completion P50/P95/P99 | 1.69 / 2.09 / 2.33 ms | 6.75 / 9.42 / 10.35 ms |
+| Repeated completions | 63.2% | 43.2% |
+| Drop-counter increase | 0 | 0 |
+
+There is no equivalent original-engine new-frame counter in this capture, so
+that cell is unavailable rather than inferred from window updates. WebGPU
+completion is queue completion plus browser callback scheduling, not a hardware
+GPU execution timestamp. Main-thread long tasks over 50 ms: none during the
+qualified Wasm window; this does not measure blocked Wasm workers.
+A pre-visible startup capture had a 383 ms gap and is excluded from the steady
+comparison. Initial blank runs, a controller-only CPU sample and a native run
+that selected desktop resolution were also excluded.
+
+### Measured attribution and next fixes
+
+A separate instrumented CPU trace was mapped using a named Wasm artifact whose
+non-custom sections match the served Release module exactly. Idle/futex waits
+were excluded from self-sample rankings rather than summed as CPU work:
+
+| Work | Share of filtered self samples |
+| --- | ---: |
+| DirectDraw `lock_shadow_record` | 23.30% |
+| Translated sprite copy `005a2790` | 18.17% |
+| `emscripten_get_now` | 6.65% |
+| DirectDraw `baseline_of` | 5.13% |
+| Palette expansion | 4.80% |
+| Browser `writeTexture` | 3.85% |
+| `host_present` | 3.77% |
+| `record_cpu_write_rects` | 3.16% |
+
+The main guest worker accounts for 130,051 of 148,130 filtered samples; browser
+main contributes 13,977. These are sample shares, not exact per-function CPU
+percentages. Prioritize lock-shadow row/mask/map work and baseline copies, then
+sprite copying. Full-frame upload and browser handoff are the next A/B targets:
+
+- The API counter capture (41.50 seconds, including its save tail) contains
+  2,123 complete 1280x960 RGBA source-view uploads: 10.435 GB total. Upload API
+  calls averaged 0.803 ms. This is source-view volume, not measured bus bandwidth.
+- 4,169 command submissions requested 8,338 completions. The backend uses
+  synchronous main-runtime proxies and deferred completion callbacks. Their
+  wait/scheduling cost needs a targeted A/B before changing callback ordering.
+- Native and Wasm both spend time in shims. Wasm's additional CPU load and
+  sealed-to-completion delay justify measuring proxy waits separately from
+  translated rendering. No proposed optimization is claimed proven by this trace.
+
+### Timing, allocations, streaming and resource lifetime
+
+WA simulation routine `00529160` derives a 50 Hz simulation interval. Its Flip
+wrappers call `005a2100`/`005a2350`; the latter waits with `Sleep(1)`. The frontend
+also uses Sleep(0)/Sleep(1). Runtime Sleep(0) yields, timed Sleep uses monotonic
+deadlines, QPC reports 10 MHz and shares GetTickCount's timeline. The kit's
+Populous frame-clock hooks are disabled for WA. Requested-versus-actual wake
+overshoot is not yet directly instrumented. No simulation clock, frame limiter,
+physics, audio timing or required frames were changed to raise reported FPS.
+HUD progression is a sanity check, not a deterministic-state or audio checksum.
+
+Actual compile commands use O3 for translated C and O1 for several host/GPU
+objects. The final web link is O2/g0; profiling names are off in the served
+Release build. CMake cache text alone misleadingly suggests uniform O3.
+Host optimization-level changes need an identical-replay A/B and cold-JIT check.
+
+The Wasm heap remained 512 MiB. Main-thread GC in the diagnostic window totaled
+41.30 ms; the largest major/minor collections were 5.04/1.73 ms. No network
+resource events occurred during that window; the asset pack was already in
+OPFS before Play. Direct OPFS read latency remains uninstrumented, so storage
+stalls are not categorically ruled out. Final audio statistics showed zero
+underruns. CPU/shim allocation costs remain a stronger measured lead than GC.
+
+After warmup the API counter capture created no additional buffers/pipelines
+and four additional textures. Final weak references covered 20 explicit GPU
+buffers/textures, estimated 63.18 MB; drawable textures are not included. A
+single weak-reference snapshot is not physical GPU residency or proof of no
+leak. Pool high-water retention and handle-release/destructor behavior need a
+longer transition test before making lifetime claims.
+
+The previous Vulkan allocation failure was independently reproduced before
+Wasm with a 32x32 canvas: a 4,096-byte OPAQUE_FD import from AMD into NVIDIA
+failed. Its imported image lived about 4.59 ms. That cross-device canvas import
+is separate from the measured game-resource lifetime concerns. Startup now
+validates actual canvas presentation and releases failed devices before trying
+an alternate adapter. Four focused tests cover deferred loss and cleanup.
+
+### Changes and verification
+
+The existing palette fast path is included in the baseline. Its earlier paired
+120-call comparison measured 1280x960 expansion at 4.045 -> 0.890 ms, matching
+pixels, padding, stack, CPU state and dirty spans. That is an operation speedup,
+not a whole-game FPS multiplier or proof of a stutter fix. The normal path has
+no per-frame comparison buffers; its private verification mode stays off.
+
+Replay benchmarking exposed a separate 100%-CPU startup paint storm. The
+original progress DLGPROC posts WM_USER from WM_PAINT and returns FALSE,
+expecting dialog-manager validation. Resource-backed dialogs now reuse the
+existing parser and perform that default paint handling. Ordinary/subclassed
+WNDPROCs retain their own validation behavior. Native cursor linkage and miniz
+linkage were repaired to make native builds/tests usable. No new UI was added.
+
+Checks: native and Wasm builds completed through tools/build.py; focused dialog
+regression passed 11 checks; Node WebGPU/asset-buffer suites passed 10 tests;
+CSV analysis passed three tests. Syntax checks, source boundaries, game-literal
+checks and diff checks passed. Original assets and streaming worker hashes are
+unchanged. The baseline checkout contains earlier unrelated editor work; that
+work is excluded from these PR commits. Full deterministic-state equivalence,
+long-duration leaks and a stable minimum FPS are not claimed.
+
+Aggregates are in `benchmarks/offline-replay-2026-11-27.json`. Private replays,
+images, native traces and captures remain under ignored build/evidence/.
 
 ## 2026-11-26: Asset-install buffer optimization
 

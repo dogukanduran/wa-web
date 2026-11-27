@@ -46,14 +46,26 @@ Full details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 source /path/to/emsdk/emsdk_env.sh
 .venv/bin/python tools/build.py --target web --jobs 3
 
-# 2. Stage WA-only Play site and serve on http://localhost:8080/
-.venv/bin/python tools/serve_web.py --serve 8080
+# 2. Stage the offline WA player and serve its private game files
+.venv/bin/python -u tools/serve_web.py --serve 8088
+# Open http://localhost:8088/
 ```
 
 The build uses the kit driver and then stages this repository's WA-only player.
 Existing `assets.pak` is reused; use `tools/serve_web.py --repack` after changing
 the private installation. Add `--regenerate` to the build command when translation
 inputs change. The build needs prepared game inputs as described above.
+
+This milestone runs entirely in client-side WebAssembly and does not initialize
+or require a network relay. Existing networking code is retained for later work.
+WebGPU startup verifies that the chosen adapter can present a canvas before
+handing it to Wasm; on hybrid GPUs it tries the alternate adapter if the preferred
+device cannot import the browser compositor's canvas image. No graphics controls
+or server-side game execution are added.
+
+For the measured offline stutter baseline, frame-time percentiles and remaining
+bottlenecks, see [STATUS.md](STATUS.md). Reproducible collector commands are in
+[CONTRIBUTING.md](CONTRIBUTING.md#offline-frame-time-profiling).
 
 ### Headless Verification (Native macOS)
 ```bash

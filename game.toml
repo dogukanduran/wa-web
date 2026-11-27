@@ -37,6 +37,11 @@ camera = 0
 default_layout = "keys"
 pad = "mapped"
 
+[mods]
+# WA has no Populous sprite hooks. Keep the generic loader available for its
+# own core adaptations instead of failing on another game's entry points.
+builtin = "none"
+
 [bundle]
 exclude = [
   "WA_Manual.pdf",

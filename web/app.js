@@ -1,5 +1,5 @@
 import { queryEnvironment, executablePath } from "./env.mjs?v=__RECOMP_BUILD__";
-import { initNetRelay } from "./net-relay.mjs?v=__RECOMP_BUILD__";
+import { createCanvasDevice } from "./webgpu.mjs?v=__RECOMP_BUILD__";
 
 const worker = new Worker(new URL("./worker.js?v=__RECOMP_BUILD__", import.meta.url), { type: "module" });
 let nextId = 1;
@@ -133,20 +133,7 @@ async function launchGame() {
   canvas.hidden = false;
   setStatus("Initializing WebGPU…");
 
-  const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
-  if (!adapter) throw new Error("WebGPU gave no adapter.");
-  const wanted = ["texture-compression-bc", "depth32float-stencil8", "float32-filterable",
-                  "unorm16-texture-formats", "rg11b10ufloat-renderable"];
-  const requiredFeatures = wanted.filter((f) => adapter.features.has(f));
-  const requiredLimits = {};
-  for (const k of ["maxTextureDimension2D", "maxBufferSize", "maxStorageBufferBindingSize",
-                   "maxUniformBufferBindingSize", "maxBindGroups", "maxSampledTexturesPerShaderStage",
-                   "maxSamplersPerShaderStage", "maxStorageBuffersPerShaderStage",
-                   "maxUniformBuffersPerShaderStage", "maxDynamicUniformBuffersPerPipelineLayout",
-                   "maxVertexBuffers", "maxVertexAttributes", "maxColorAttachments",
-                   "maxInterStageShaderVariables"])
-    if (k in adapter.limits) requiredLimits[k] = adapter.limits[k];
-  const device = await adapter.requestDevice({ requiredFeatures, requiredLimits });
+  const device = await createCanvasDevice(canvas);
   device.lost.then((info) => setStatus(`Graphics device lost: ${info.message}`, true));
   device.addEventListener("uncapturederror", (e) => console.error("WebGPU:", e.error.message));
 
@@ -187,7 +174,6 @@ async function launchGame() {
         }
       });
       canvas.focus();
-      initNetRelay(Module);
       Module.callMain([`--exe=/opfs/${game.id}/game/${executablePath(game)}`]);
     },
   };

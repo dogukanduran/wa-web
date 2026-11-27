@@ -1,0 +1,9 @@
+id = "wa.palette"
+name = "WA palette expansion"
+version = "1.0.0"
+api = 1
+game = "10d8172b5761bb5a1cb4ec219fdaca5015c0b86b6638c8dbcc8f5d0618c0a8b9"
+affects_simulation = false
+
+[plugin]
+path = "wa_palette.so"
