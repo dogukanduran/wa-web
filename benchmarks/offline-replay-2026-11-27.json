@@ -1,0 +1,203 @@
+{
+  "scenario": "same private recorded Quick CPU replay; approximately seconds 2\u201332; 1280x960 game and drawable; AMD integrated Radeon; X11; 165Hz desktop",
+  "replay_sha256": "c13aee1ee6e41254705492130092207b3f7feb417ea62a628618f0766bdb1394",
+  "platform": {
+    "kernel": "7.3.5-200.fc44.x86_64",
+    "cpu": "AMD Ryzen 7 5800H",
+    "chrome": "158.0.8127.88",
+    "wine": "11.21 Staging",
+    "original_runtime": "Windows executable under Wine/OpenGL, not native Windows",
+    "native_runtime": "Linux/Vulkan",
+    "wasm_runtime": "client-side Wasm/WebGPU/Vulkan"
+  },
+  "method": {
+    "cpu": "200ms process-group samples; one core=100%; Chrome browser PID rather than Node controller; Wine server excluded",
+    "gpu": "device-wide AMD busy counter, not process-exclusive",
+    "window": "XDamage update-receive intervals; not scanout or input latency",
+    "completion": "last 30 seconds of complete valid presenter CSV rows; not physical display FPS",
+    "repetitions": "one qualified 30-second capture per comparison case; additional diagnostic/startup captures kept separate"
+  },
+  "cases": {
+    "original": {
+      "window_updates": {
+        "metric": "XDamage nonempty window-update receive intervals; not hardware scanout or input latency",
+        "seconds": 30.0,
+        "fps": 164.93420160744455,
+        "p50_ms": 6.056124999759049,
+        "p95_ms": 6.233944000086922,
+        "p99_ms": 6.370416000208934,
+        "max_ms": 19.458156999917264
+      },
+      "telemetry": {
+        "samples": 151,
+        "elapsed_seconds": 30.00009224500036,
+        "cpu_percent": {
+          "mean": 39.167260028461165,
+          "p95": 45.00382667537362
+        },
+        "amd_gpu_percent": {
+          "mean": 24.980132450331126,
+          "p95": 26
+        },
+        "nvidia_gpu_percent": {
+          "mean": null,
+          "p95": null
+        },
+        "peak_rss_bytes": 278081536
+      },
+      "presenter": null
+    },
+    "native": {
+      "window_updates": {
+        "metric": "XDamage nonempty window-update receive intervals; not hardware scanout or input latency",
+        "seconds": 30.0,
+        "fps": 224.8744191415095,
+        "p50_ms": 4.489832999752252,
+        "p95_ms": 10.175930000059452,
+        "p99_ms": 11.576274000162812,
+        "max_ms": 12.614415000371082
+      },
+      "telemetry": {
+        "samples": 151,
+        "elapsed_seconds": 30.00008172800017,
+        "cpu_percent": {
+          "mean": 109.23446800636972,
+          "p95": 115.00294005029166
+        },
+        "amd_gpu_percent": {
+          "mean": 24.29801324503311,
+          "p95": 28
+        },
+        "nvidia_gpu_percent": {
+          "mean": null,
+          "p95": null
+        },
+        "peak_rss_bytes": 181420032
+      },
+      "presenter": {
+        "metric": "software presenter completion; not hardware scanout or input latency",
+        "window_seconds": 30,
+        "new_frames": 2497,
+        "all_completions": 6784,
+        "new_completion_fps": 83.35302287185661,
+        "new_intervals_ms": {
+          "p50": 12.811930000225402,
+          "p95": 15.655710999908479,
+          "p99": 30.724255999757588,
+          "max": 37.860004999856756
+        },
+        "sealed_to_completion_ms": {
+          "p50": 1.6945209999903454,
+          "p95": 2.092624000397336,
+          "p99": 2.3284130002139136,
+          "max": 2.784485000120185
+        },
+        "repeat_percent": 63.19280660377358,
+        "drops_delta": 0.0,
+        "rejected_records": 0
+      }
+    },
+    "wasm": {
+      "window_updates": {
+        "metric": "XDamage nonempty window-update receive intervals; not hardware scanout or input latency",
+        "seconds": 30.0,
+        "fps": 111.57147182681682,
+        "p50_ms": 7.3577790026320145,
+        "p95_ms": 13.821643002302153,
+        "p99_ms": 18.237373002193635,
+        "max_ms": 21.298782998201204
+      },
+      "telemetry": {
+        "samples": 151,
+        "elapsed_seconds": 30.000079109999206,
+        "cpu_percent": {
+          "mean": 180.4345046058688,
+          "p95": 200.00121301062703
+        },
+        "amd_gpu_percent": {
+          "mean": 20.264900662251655,
+          "p95": 23
+        },
+        "nvidia_gpu_percent": {
+          "mean": null,
+          "p95": null
+        },
+        "peak_rss_bytes": 2448076800
+      },
+      "presenter": {
+        "metric": "software presenter completion; not hardware scanout or input latency",
+        "window_seconds": 30,
+        "new_frames": 1900,
+        "all_completions": 3345,
+        "new_completion_fps": 63.31909046439288,
+        "new_intervals_ms": {
+          "p50": 16.27492904663086,
+          "p95": 20.68018913269043,
+          "p99": 36.279916763305664,
+          "max": 43.29967498779297
+        },
+        "sealed_to_completion_ms": {
+          "p50": 6.754875183105469,
+          "p95": 9.419918060302734,
+          "p99": 10.354995727539062,
+          "max": 12.099981307983398
+        },
+        "repeat_percent": 43.19880418535127,
+        "drops_delta": 0.0,
+        "rejected_records": 0
+      },
+      "main_long_tasks": [],
+      "heap": [
+        {
+          "at": 42432.54500000179,
+          "bytes": 536870912
+        }
+      ],
+      "relay": "undefined"
+    }
+  },
+  "diagnostic": {
+    "filtered_self_samples": 148130,
+    "hotspots_percent": {
+      "lock_shadow_record": 23.3,
+      "fn_005a2790": 18.17,
+      "emscripten_get_now": 6.65,
+      "baseline_of": 5.13,
+      "palette_expand": 4.8,
+      "writeTexture": 3.85,
+      "host_present": 3.77,
+      "record_cpu_write_rects": 3.16
+    },
+    "main_gc": {
+      "major_count": 3,
+      "major_total_ms": 14.492,
+      "major_max_ms": 5.042,
+      "minor_count": 23,
+      "minor_total_ms": 26.803,
+      "minor_max_ms": 1.734
+    },
+    "network_events_in_30s": 0,
+    "counter_window_seconds": 41.498745,
+    "full_rgba_uploads": 2123,
+    "source_view_bytes": 10434969600,
+    "upload_api_ms": 1705.02,
+    "submissions": 4169,
+    "completion_requests": 8338,
+    "new_buffers": 0,
+    "new_textures": 4,
+    "new_pipelines": 0,
+    "final_weak_resources": 20,
+    "estimated_explicit_resource_bytes": 63180904,
+    "wasm_heap_bytes": 536870912,
+    "audio_underruns": 0,
+    "qualification": "API counter window includes capture tail; weak references are not a VRAM/leak census; samples are not summed futex wall time"
+  },
+  "limitations": [
+    "original reference runs under Wine",
+    "software completions and window updates are different metrics",
+    "OPFS latency and requested-vs-actual Sleep wake delay not directly instrumented",
+    "no long-duration leak census or deterministic state/waveform checksum",
+    "benchmarks used working checkout with other pre-existing editor changes; those unrelated changes are excluded from this PR",
+    "blank runs, controller-only CPU capture, mismatched native resolution and pre-visible startup samples excluded from comparison table"
+  ]
+}

@@ -84,13 +84,19 @@ the behavior.
 source /path/to/emsdk/emsdk_env.sh
 .venv/bin/python tools/build.py --target web
 
-.venv/bin/python kit/tools/web_launcher.py --game-dir . --out build/web/site \
-  --web-build wa=build/web/recomp --stream wa --serve 8080
-# open http://localhost:8080/
+.venv/bin/python -u tools/serve_web.py --serve 8088
+# open http://localhost:8088/
 ```
 
-Once the build directory is configured, incremental rebuilds can run directly:
-`cmake --build build/cmake/web --target ArmageddonRecomp.js --parallel 8`.
+The current milestone uses the offline WA page and its existing private asset
+pack. It never initializes the WebSocket relay. Networking sources are preserved
+for a later milestone. Game execution remains client-side WebAssembly.
+
+`node --test tests/webgpu.test.cjs` covers presentation failure, alternate-adapter
+selection, and cleanup. Actual browser gameplay verification is still required.
+
+Use `tools/build.py --target web --jobs 3` for cached incremental builds.
+Only request `--regenerate` when translation inputs changed.
 
 ## Where changes go
 
@@ -152,3 +158,62 @@ Small, focused PRs get reviewed fastest. One fix or one feature per PR.
 By contributing you agree that your contributions to this repository are licensed
 under the [MIT License](LICENSE). Contributions to `kit/` fall under that
 project's license. See [NOTICE](NOTICE).
+
+### Offline frame-time profiling
+
+Run from a graphical desktop shell on Linux, with the local offline server
+running and your own `.WAgame` replay. Use an isolated profile under `build/`;
+its asset installation and replay copy stay in private OPFS storage. Install the
+optional collector dependency once:
+
+```sh
+npm install --prefix build/browser-tools playwright-core@1.56.1
+node tools/profile_browser.cjs --replay="/absolute/path/to/owned.WAgame" \
+  --out=build/evidence/wasm-baseline --x11 <<'JSON'
+{"op":"play"}
+{"op":"await-game","warmupMs":2000}
+{"op":"measure","seconds":30}
+{"op":"close"}
+JSON
+python3 tools/summarize_frame_timings.py build/evidence/wasm-baseline/frames.csv
+```
+
+`--chrome=` and `--python=` select executables. The default Chrome path is
+`/usr/bin/google-chrome`; the Python helper uses the local venv or `python3`.
+The X11 flag enables the common window-update collector used for the comparison;
+profile the actual Wayland launch separately before attributing differences to
+its compositor. The browser PID printed by the tool identifies the Chrome
+process group, not the Node controller. A newly installed profile must finish
+asset setup before Play. `await-game` rejects blank runs and waits for the
+recorded-game HUD before the warmup.
+
+For a separate diagnostic capture, add `--diagnostic` and send `trace-start`
+before Play, then `trace-stop` after `measure`, before `close`. It instruments
+WebGPU calls and saves a CDP CPU/GC trace. Do not mix its timing results with
+unprofiled baselines. GPU byte counts are source-view sizes, not bus bandwidth;
+resource weak references are not a VRAM census. Counter snapshots can include
+the save tail; use their actual timestamp span.
+
+For the original executable and native build, use the same recorded input,
+resolution, adapter and visible-game interval in isolated copied game/profile
+directories. On Linux the original executable requires Wine; report that layer.
+A fresh registry fixture needs all parent keys for its Options values. Check
+both the guest display-mode log and actual drawable dimensions: a missing parent
+key can silently select desktop resolution. CPU/GPU and X11 collectors can also
+be run independently:
+
+```sh
+python3 tools/profile_telemetry.py --pgid GAME_PROCESS_GROUP --seconds 30 \
+  --out build/evidence/native-telemetry.jsonl
+python3 tools/profile_window_frames.py --window X11_WINDOW_ID --seconds 30 \
+  --out build/evidence/native-window.json
+```
+
+For Wine's GL drawable use `--child` when its client window owns a child
+rendering window. `--pgid` can discover an X11 window instead of `--window`.
+Telemetry can select `--amd-device=/sys/class/drm/cardN/device` or add `--nvidia`.
+Window updates, new completions, sealed-to-completion delay, RAF and long tasks
+are distinct metrics; none alone measures hardware scanout or input latency.
+Keep raw captures, screenshots and game inputs under ignored `build/`, and record
+only non-copyrighted aggregate results in milestone documentation. The current
+baseline and remaining hypotheses are documented in [STATUS.md](STATUS.md).
