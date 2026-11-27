@@ -52,3 +52,9 @@ exclude = [
   "gog.ico",
   "webcache.zip",
 ]
+
+[registry.'HKEY_CURRENT_USER\Software\Team17SoftwareLTD\WormsArmageddon\Options']
+Vsync = 0
+
+[registry.'HKEY_LOCAL_MACHINE\Software\Team17SoftwareLTD\WormsArmageddon\Options']
+Vsync = 0

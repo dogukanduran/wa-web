@@ -282,6 +282,18 @@ def stage(recomp_dir: Path, out_dir: Path, repack: bool) -> None:
         "exeDir": game["exe_dir"],
         "dataStamp": data_stamp,
     }
+    if cfg.get("registry"):
+        reg_defaults = {}
+        for key, vals in cfg["registry"].items():
+            if not isinstance(vals, dict):
+                continue
+            reg_defaults[key] = {
+                k: ({"type": 4, "data": int(v)} if isinstance(v, int) and not isinstance(v, bool)
+                    else {"type": 1, "data": str(v)})
+                for k, v in vals.items()
+            }
+        if reg_defaults:
+            meta["registryDefaults"] = reg_defaults
     (out_dir / "game.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 
     for src in (ROOT / "web").iterdir():
@@ -300,8 +312,11 @@ def stage(recomp_dir: Path, out_dir: Path, repack: bool) -> None:
             shutil.rmtree(dst_res)
         shutil.copytree(res_dir, dst_res)
 
-    wasm = out_dir / "ArmageddonRecomp.wasm"
-    stamp = hashlib.sha256(wasm.read_bytes()).hexdigest()[:12] if wasm.exists() else "dev"
+    h = hashlib.sha256()
+    for p in (out_dir / "ArmageddonRecomp.wasm", out_dir / "game.json", out_dir / "app.js", out_dir / "worker.js", out_dir / "index.html"):
+        if p.exists():
+            h.update(p.read_bytes())
+    stamp = h.hexdigest()[:12] if h.digest_size else "dev"
     for name in ("index.html", "app.js", "worker.js"):
         p = out_dir / name
         if p.exists():
@@ -331,6 +346,8 @@ class IsolatedHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         self.send_header("Content-Security-Policy", CSP)
+        if self.path.split("?", 1)[0].endswith((".json", ".js", ".mjs", ".html", "/")):
+            self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
     def send_head(self):

@@ -169,8 +169,43 @@ class StreamBuffer {
   }
 }
 
+async function seedRegistryDefaults(gameId, defaults) {
+  if (!defaults || typeof defaults !== "object") return;
+  const profile = await dirFor(`${gameId}/profile`);
+  let registry = {};
+  const raw = await readText(profile, "registry.json");
+  if (raw) {
+    try {
+      registry = JSON.parse(raw);
+    } catch {}
+  }
+  const sep = "\\";
+  let dirty = false;
+  for (const [fullKey, values] of Object.entries(defaults)) {
+    const parts = fullKey.split(sep).filter(Boolean);
+    for (let i = 1; i <= parts.length; i++) {
+      const k = parts.slice(0, i).join(sep);
+      if (!registry[k] || typeof registry[k] !== "object") {
+        registry[k] = {};
+        dirty = true;
+      }
+    }
+    const target = registry[parts.join(sep)];
+    for (const [name, entry] of Object.entries(values)) {
+      if (!(name in target) || (entry.data !== "" && target[name]?.data === "")) {
+        target[name] = entry;
+        dirty = true;
+      }
+    }
+  }
+  if (dirty) {
+    await writeBytes(profile, "registry.json", new TextEncoder().encode(JSON.stringify(registry, null, 2)));
+  }
+}
+
 const handlers = {
   async ensure({ game }) {
+    await seedRegistryDefaults(game.id, game.registryDefaults);
     const root = await dirFor(`${game.id}/game`);
     const currentStamp = await readText(root, ".stamp");
     if (currentStamp?.trim() === game.dataStamp) {
