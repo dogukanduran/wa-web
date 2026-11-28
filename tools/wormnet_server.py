@@ -15,16 +15,16 @@ import urllib.parse
 
 DEFAULT_CHANNELS: dict[str, dict[str, str]] = {
     "#AnythingGoes": {
-        "topic": "pf,Be - Armageddon Recomp WormNET Lobby",
-        "scheme": "pf,Be",
+        "topic": "Pf,Be - Armageddon Recomp WormNET Lobby",
+        "scheme": "Pf,Be",
     },
     "#RoperHeaven": {
-        "topic": "pf,Be - Rope & Shopper matches",
-        "scheme": "pf,Be",
+        "topic": "Pf,Be - Rope & Shopper matches",
+        "scheme": "Pf,Be",
     },
     "#Intermediate": {
-        "topic": "pf,Be - Standard Intermediate matches",
-        "scheme": "pf,Be",
+        "topic": "Pf,Be - Standard Intermediate matches",
+        "scheme": "Pf,Be",
     },
 }
 
@@ -108,8 +108,8 @@ class WormnetState:
         norm = channel.lstrip("#").lower()
         for k, v in self.channels.items():
             if k.lstrip("#").lower() == norm:
-                return v.get("scheme", "pf,Be")
-        return "pf,Be"
+                return v.get("scheme", "Pf,Be")
+        return "Pf,Be"
 
 
 def _make_http_handler(state: WormnetState):
@@ -339,8 +339,8 @@ class WormnetIRCServer:
         self.channels[name] = set()
         if name not in self.state.channels:
             self.state.channels[name] = {
-                "topic": f"pf,Be - {name}",
-                "scheme": "pf,Be",
+                "topic": f"Pf,Be - {name}",
+                "scheme": "Pf,Be",
             }
         return name
 
@@ -414,7 +414,7 @@ class WormnetIRCServer:
             c.send_line(f":{s} 321 {n} Channel :Users  Name")
             with self.lock:
                 for ch_name, members in self.channels.items():
-                    topic = self.state.channels.get(ch_name, {}).get("topic", "pf,Be - Armageddon Recomp")
+                    topic = self.state.channels.get(ch_name, {}).get("topic", "Pf,Be - Armageddon Recomp")
                     count = max(1, len(members))
                     c.send_line(f":{s} 322 {n} {ch_name} {count} :{topic}")
             c.send_line(f":{s} 323 {n} :End of /LIST")
@@ -432,7 +432,7 @@ class WormnetIRCServer:
                     members.add(c)
                     c.channels.add(ch)
                     member_list = list(members)
-                    topic = self.state.channels.get(ch, {}).get("topic", "pf,Be - Armageddon Recomp")
+                    topic = self.state.channels.get(ch, {}).get("topic", "Pf,Be - Armageddon Recomp")
                 for m in member_list:
                     m.send_line(f":{c.prefix} JOIN :{ch}")
                 c.send_line(f":{s} 332 {n} {ch} :{topic}")
@@ -502,7 +502,7 @@ class WormnetIRCServer:
         if cmd == "TOPIC":
             target = args[0] if args else "#AnythingGoes"
             ch = self._find_channel_key(target)
-            topic = self.state.channels.get(ch, {}).get("topic", "pf,Be - Armageddon Recomp")
+            topic = self.state.channels.get(ch, {}).get("topic", "Pf,Be - Armageddon Recomp")
             c.send_line(f":{s} 332 {n} {ch} :{topic}")
             return
 
