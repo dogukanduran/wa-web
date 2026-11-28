@@ -249,6 +249,13 @@ All shims added/fixed in `kit/` during this session:
   - Fixed `update_platform_pointer_capture()` to respect `host_cursor_visible()` so the OS cursor is not hidden on canvas click when `WA.exe` calls `ShowCursor(TRUE)`.
 - **`kit/runtime/memory.cpp`**:
   - Expanded `RECOMP_WATCH` backtrace (`watch_writer()`) from 1 frame to 10 frames for faster debugging.
+- **`kit/runtime/user32_vcl.cpp`**:
+  - Made `BS_GROUPBOX` (`0x00000007`) button frames transparent to mouse hit-testing in `mouse_window()` so child controls overlapped by groupbox frames (such as the Network tab's WormNET, LAN, TCP/IP, Configuration, and Player Name controls in dialog `0x8c`) receive mouse clicks properly.
+- **`kit/runtime/wsock.cpp`, `kit/tools/net_relay.py`, `tools/wormnet_server.py`, `tools/serve_web.py`, `web/app.js`, `game.toml`**:
+  - Added custom WormNET HTTP CGI (`Login.asp`, `RequestChannelScheme.asp`, `GameList.asp`, `Game.asp`, `ServerList.htm`) and IRC (`6667`) lobby server in `tools/wormnet_server.py`.
+  - Updated `w_gethostbyname` in `kit/runtime/wsock.cpp` to resolve external WormNET hostnames (`wormnet1.team17.com`, `serverlist.worms2d.info`, etc.) to the virtual relay gateway `10.0.0.1` (`0x0a000001`).
+  - Updated `_Client._handle_connect` and `_bridge_outbound_tcp` in `kit/tools/net_relay.py` to route virtual gateway `10.0.0.1:80`/`17080` to local WormNET HTTP (`127.0.0.1:17080`) and `10.0.0.1:6667` to local WormNET IRC (`127.0.0.1:6667`).
+  - Wired `initNetRelay(Module)` in `web/app.js` and the `/net` WebSocket endpoint + `start_wormnet_server(...)` in `tools/serve_web.py`, and seeded `PlayerName = "Player"` under `HKEY_CURRENT_USER\Software\Team17SoftwareLTD\WormsArmageddon\NetSettings` in `game.toml`.
 
 ---
 

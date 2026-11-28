@@ -18,10 +18,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "kit" / "tools"))
+sys.path.insert(0, str(ROOT / "tools"))
 import game_config  # noqa: E402
+import net_relay  # noqa: E402
+import wormnet_server  # noqa: E402
 
 BUILD_STAMP = "__RECOMP_BUILD__"
-CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; object-src 'none'; base-uri 'none'"
+CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'none'"
 RECOMP_FILES = (
     "ArmageddonRecomp.js",
     "ArmageddonRecomp.wasm",
@@ -335,12 +338,19 @@ def stage(recomp_dir: Path, out_dir: Path, repack: bool) -> None:
 
 
 class IsolatedHandler(http.server.SimpleHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
     extensions_map = {
         **http.server.SimpleHTTPRequestHandler.extensions_map,
         ".wasm": "application/wasm",
         ".mjs": "application/javascript",
         ".js": "application/javascript",
     }
+
+    def do_GET(self):
+        if self.path.split("?", 1)[0] == "/net":
+            if net_relay.handle_websocket(self):
+                return
+        super().do_GET()
 
     def end_headers(self):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
@@ -380,6 +390,13 @@ def main():
 
     stage(args.recomp_dir, args.out, repack=args.repack)
     if args.serve is not None:
+        wormnet_server.start_wormnet_server(
+            http_host="0.0.0.0",
+            http_port=17080,
+            irc_host="0.0.0.0",
+            irc_port=6667,
+            public_host="10.0.0.1",
+        )
         handler = functools.partial(IsolatedHandler, directory=str(args.out))
         with http.server.ThreadingHTTPServer((args.host, args.serve), handler) as srv:
             print(f"Serving Worms Armageddon at http://{args.host}:{args.serve}/")

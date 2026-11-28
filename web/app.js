@@ -1,5 +1,6 @@
 import { queryEnvironment, executablePath } from "./env.mjs?v=__RECOMP_BUILD__";
 import { createCanvasDevice } from "./webgpu.mjs?v=__RECOMP_BUILD__";
+import { initNetRelay } from "./net-relay.mjs?v=__RECOMP_BUILD__";
 
 const worker = new Worker(new URL("./worker.js?v=__RECOMP_BUILD__", import.meta.url), { type: "module" });
 let nextId = 1;
@@ -174,6 +175,7 @@ async function launchGame() {
         }
       });
       canvas.focus();
+      initNetRelay(Module);
       Module.callMain([`--exe=/opfs/${game.id}/game/${executablePath(game)}`]);
     },
   };

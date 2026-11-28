@@ -58,3 +58,8 @@ Vsync = 0
 
 [registry.'HKEY_LOCAL_MACHINE\Software\Team17SoftwareLTD\WormsArmageddon\Options']
 Vsync = 0
+
+[registry.'HKEY_CURRENT_USER\Software\Team17SoftwareLTD\WormsArmageddon\NetSettings']
+PlayerName = "Player"
+ServerLaunched = 1
+Address = "http://wormnet1.team17.com"
